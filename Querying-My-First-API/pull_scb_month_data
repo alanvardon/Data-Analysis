@@ -1,0 +1,128 @@
+def pull_scb_month_data():
+
+    from country_list import available_languages
+    from country_list import countries_for_language
+    import requests
+    import json
+    from pyscbwrapper import SCB
+    import csv
+    import tkinter.messagebox
+    
+    countries = dict(countries_for_language('en'))
+
+    scb = SCB('en','NV','NV1701','NV1701B','NV1701T9NM')
+    last_date_code = scb.get_variables()['month'][-1]
+    session = requests.Session()
+    url = 'http://api.scb.se/OV0104/v1/doris/en/ssd/START/NV/NV1701/NV1701B/NV1701T9NM'
+
+    query = {
+          "query": [
+            {
+              "code": "Hemland",
+              "selection": {
+                "filter": "item",
+                "values": [
+                  "TOTHem",
+                  "SE",
+                  "UTL",
+                  "NEXS",
+                  "ÖEU",
+                  "VRLDEXEUR",
+                  "DK",
+                  "NO",
+                  "FI",
+                  "IS",
+                  "DE",
+                  "GB",
+                  "IE",
+                  "NL",
+                  "BE",
+                  "LU",
+                  "FR",
+                  "CH",
+                  "AT",
+                  "IT",
+                  "ES",
+                  "PT",
+                  "GR",
+                  "TR",
+                  "RU",
+                  "EE",
+                  "LV",
+                  "LT",
+                  "PL",
+                  "CZ",
+                  "SK",
+                  "HU",
+                  "RO",
+                  "SI",
+                  "BG",
+                  "CY",
+                  "MT",
+                  "OVEUR",
+                  "US",
+                  "CA",
+                  "BR",
+                  "OVAM",
+                  "JP",
+                  "KR",
+                  "CN",
+                  "IN",
+                  "OVASI",
+                  "AU",
+                  "NZ",
+                  "OVR",
+                  "ÖUS"
+                ]
+              }
+            },
+            {
+              "code": "Anlaggning",
+              "selection": {
+                "filter": "item",
+                "values": [
+                  "H"
+                ]
+              }
+            },
+            {
+              "code": "ContentsCode",
+              "selection": {
+                "filter": "item",
+                "values": [
+                  "00000398"
+                ]
+              }
+            },
+            {
+              "code": "Tid",
+              "selection": {
+                "filter": "item",
+                "values": [
+                  "2019M12"
+                ]
+              }
+            }
+          ],
+          "response": {
+            "format": "json"
+          }
+        }
+    response = session.post(url,json = query)
+    response_json = json.loads(response.content.decode('utf-8-sig'))
+    month_data = response_json['data']
+    file_name = last_date_code + ' - Number of nights spent by country of residence and by type of establishment - Preliminary statistics.csv'
+    
+    dict_agg = {'TOTHem': 'Total, all Country of residence', 'UTL':'Rest of the world', 'NEXS':'The Nordic countries, excluding Sweden', 'ÖEU':'Europe, excluding the Nordic countries', 'VRLDEXEUR':'World excluding Europe', 'OVEUR':'Other Europe', 'OVAM':'Rest of Amerika', 'OVASI':'Other Asia', 'OVR':'Other countries', 'ÖUS':'Information missing'}
+    
+    with open(file_name, 'w') as new_file:
+        csv_writer = csv.writer(new_file, delimiter=',')
+        csv_writer.writerow(['Country of Residence', 'Type of Establishment', 'Number of Nights'])
+        for item in month_data:
+            try:
+                csv_writer.writerow([countries[item['key'][0]],'Hotels', item['values'][0]])
+            except Exception:
+                csv_writer.writerow([dict_agg[item['key'][0]],'Hotels', item['values'][0]])
+    tkinter.messagebox.showinfo('','Task complete: ' + file_name + ' has been saved.')
+   
+                                                       
