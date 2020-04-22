@@ -1,1 +1,1 @@
-# Repository for Dataquest.io Walthrough Projects
+## Repository for Dataquest.io Walthrough Projects
