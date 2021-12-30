@@ -1,2 +1,2 @@
 # Data-Analysis
-This resporitory displays different data analysis exercise I have undertaken
+This resporitory displays different data analysis exercises I have undertaken.
